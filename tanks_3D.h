@@ -1,8 +1,11 @@
 #pragma once
 
 #include "components/simple_scene.h"
-#include "lab_m1/lab5/lab_camera.h"
+#include "utils/camera.h"
+#include "engine/graphics/renderer.h"
+#include "models/tank.h"
 
+#define MOUSE_SENSITIVITY_OX 0.01f
 
 namespace m1
 {
@@ -15,15 +18,12 @@ namespace m1
         bool isOrtho = false;
         float orthoRight = 8.0f, orthoUp = 4.5f, orthoDown = -4.5f, orthoLeft = -8.0f;
 
-
         void Init() override;
 
     private:
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
-
-        void RenderMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix) override;
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -35,8 +35,13 @@ namespace m1
         void OnWindowResize(int width, int height) override;
 
     protected:
-        implemented::Camera* camera;
-        glm::mat4 projectionMatrix;
         bool renderCameraTarget;
+        glm::mat4 projectionMatrix;
+
+        Implemented::CameraAPI* camera;
+        Renderer renderer;
+        std::unordered_map<std::string, Mesh*> chassisMeshes;
+        std::unordered_map<std::string, Shader*> chassisShaders;
+        Tank playerTank;
     };
 }   // namespace m1

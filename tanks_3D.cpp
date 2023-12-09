@@ -14,8 +14,7 @@ using namespace m1;
  */
 
 
-Tanks3D::Tanks3D()
-{
+Tanks3D::Tanks3D(){
 }
 
 
@@ -26,72 +25,68 @@ Tanks3D::~Tanks3D()
 
 void Tanks3D::Init()
 {
+    Mesh* mesh = nullptr;
+    Shader* shader = nullptr;
     renderCameraTarget = false;
-
-    camera = new implemented::Camera();
-    camera->Set(glm::vec3(0, 2, 3.5f), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
-
-    {
-        Mesh* mesh = new Mesh("track");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "trackv2.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
-
-    {
-        Mesh* mesh = new Mesh("turret");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "turretv2.obj");
-		meshes[mesh->GetMeshID()] = mesh;
-	}
+    renderer = Renderer();
+    camera = new Implemented::CameraAPI();
+    Chassis chassis = Chassis();
+    Cannon cannon = Cannon();
+    Turret turret = Turret();
+    playerTank = Tank(chassis, turret, cannon);
     
-    {
-		Mesh* mesh = new Mesh("body");
-		mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "bodyv2.obj");
-		meshes[mesh->GetMeshID()] = mesh;
-    }
-
-    {
-        Mesh* mesh = new Mesh("cannon");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "cannonv2.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
-
-    	// Create a shader program for drawing face polygon with the color of the normal
-    {
-		Shader *shader = new Shader("Camouflage");
-		shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TankVertexShader.glsl"), GL_VERTEX_SHADER);
-		shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TankFragmentShader.glsl"), GL_FRAGMENT_SHADER);
-		shader->CreateAndLink();
-		shaders[shader->GetName()] = shader;
-	}
-
-    {
-        Shader* shader = new Shader("TankVertexNormal");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CamouflageVertexShader.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CamouflageFragmentShader.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
-
-    {
-		Shader* shader = new Shader("TurretShader");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TurretVertexShader.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TurretFragmentShader.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-	}
-
-    {
-        Shader* shader = new Shader("CannonFragmentShader");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CannonVertexShader.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CannonFragmentShader.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
-
-    //// TODO(student): After you implement the changing of the projection
-    //// parameters, remove hardcodings of these parameters
+    camera->Set(glm::vec3(0, 2, 3.5f), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
     projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
 
+    mesh = new Mesh("track");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "track.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+
+    mesh = new Mesh("turret");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "turret.obj");
+	meshes[mesh->GetMeshID()] = mesh;
+
+	mesh = new Mesh("body");
+	mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "body.obj");
+	meshes[mesh->GetMeshID()] = mesh;
+
+    mesh = new Mesh("cannon");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "cannon.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+
+	shader = new Shader("track");
+	shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TrackVertexShader.glsl"), GL_VERTEX_SHADER);
+	shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TrackFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+	shader->CreateAndLink();
+	shaders[shader->GetName()] = shader;
+
+    shader = new Shader("body");
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "BodyVertexShader.glsl"), GL_VERTEX_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "BodyFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+    shader->CreateAndLink();
+    shaders[shader->GetName()] = shader;
+
+	shader = new Shader("turret");
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TurretVertexShader.glsl"), GL_VERTEX_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TurretFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+    shader->CreateAndLink();
+    shaders[shader->GetName()] = shader;
+
+    shader = new Shader("cannon");
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CannonVertexShader.glsl"), GL_VERTEX_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CannonFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+    shader->CreateAndLink();
+    shaders[shader->GetName()] = shader;
+
+    chassisMeshes = {
+        {"track", meshes["track"]},
+        {"body", meshes["body"]},
+    };
+
+    chassisShaders = {
+        {"track", shaders["track"]},
+        {"body", shaders["body"]},
+    };
 }
 
 
@@ -110,32 +105,18 @@ void Tanks3D::FrameStart()
 
 void Tanks3D::Update(float deltaTimeSeconds)
 {
-
-    // Set color to white before rendering each component
-    glm::vec3 whiteColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
-    // Render track
-    {
-		glm::mat4 modelMatrix = glm::mat4(1);
-		RenderMesh(meshes["track"], shaders["TankVertexNormal"], modelMatrix);
-	}
-
-	// Render turret    
-	{
-		glm::mat4 modelMatrix = glm::mat4(1);
-		RenderMesh(meshes["turret"], shaders["TurretShader"], modelMatrix);
-	}
-
-    {
-        glm::mat4 modelMatrix = glm::mat4(1);
-		//modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.22f, -0.05, 0.05));
-		RenderMesh(meshes["body"], shaders["Camouflage"], modelMatrix);
+    if (playerTank.isMoving()) {
+        playerTank.move(deltaTimeSeconds);
     }
 
-    {
-		glm::mat4 modelMatrix = glm::mat4(1);
-		RenderMesh(meshes["cannon"], shaders["CannonFragmentShader"], modelMatrix);
-	}
+    if (playerTank.isAiming()) {
+        playerTank.aim(deltaTimeSeconds);
+    }
+
+
+    renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, playerTank.getPosition(), playerTank.getChassis()->getRotationAngle());
+    renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle());
+    renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle(), playerTank.getCannon()->getRotationAngle());
 }
 
 
@@ -144,50 +125,25 @@ void Tanks3D::FrameEnd()
     DrawCoordinateSystem(camera->GetViewMatrix(), projectionMatrix);
 }
 
-
-void Tanks3D::RenderMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
-{
-    if (!mesh || !shader || !shader->program)
-        return;
-
-    // Render an object using the specified shader and the specified position
-    shader->Use();
-    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
-    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-    mesh->Render();
-}
-
-
-/*
- *  These are callback functions. To find more about callbacks and
- *  how they behave, see `input_controller.h`.
- */
-
-
-
-
 void Tanks3D::OnInputUpdate(float deltaTime, int mods)
 {
-    // move the camera only if MOUSE_RIGHT button is pressed
     if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
     {
         float cameraSpeed = 2.0f;
 
-        if (window->KeyHold(GLFW_KEY_W)) {
+        if (window->KeyHold(GLFW_KEY_U)) {
             camera->TranslateForward(deltaTime * cameraSpeed);
         }
 
-        if (window->KeyHold(GLFW_KEY_A)) {
+        if (window->KeyHold(GLFW_KEY_H)) {
             camera->TranslateRight(-deltaTime * cameraSpeed);
         }
 
-        if (window->KeyHold(GLFW_KEY_S)) {
+        if (window->KeyHold(GLFW_KEY_J)) {
             camera->TranslateForward(-deltaTime * cameraSpeed);
         }
 
-        if (window->KeyHold(GLFW_KEY_D)) {
+        if (window->KeyHold(GLFW_KEY_K)) {
             camera->TranslateRight(deltaTime * cameraSpeed);
         }
 
@@ -237,7 +193,29 @@ void Tanks3D::OnInputUpdate(float deltaTime, int mods)
 
 void Tanks3D::OnKeyPress(int key, int mods)
 {
+    if (key == GLFW_KEY_W) {
+        playerTank.setMovingState(true, FORWARD);
+    }
 
+    if (key == GLFW_KEY_S) {
+        playerTank.setMovingState(true, BACKWARD);
+    }
+
+    if (key == GLFW_KEY_A) {
+		playerTank.setMovingState(true, LEFT);
+	}
+
+    if (key == GLFW_KEY_D) {
+        playerTank.setMovingState(true, RIGHT);
+    }
+
+    if (key == GLFW_KEY_Q) {
+        playerTank.setCannonAimingState(true, UP);
+    }
+
+    if (key == GLFW_KEY_E) {
+		playerTank.setCannonAimingState(true, DOWN);
+    }
 }
 
 
@@ -256,12 +234,47 @@ void Tanks3D::OnKeyRelease(int key, int mods)
         projectionMatrix = glm::perspective(90.f, 2.f, 2.f, 200.0f);
         isOrtho = false;
     }
-}
 
+    if (key == GLFW_KEY_W) {
+        playerTank.setMovingState(false, FORWARD);
+    }
+
+    if (key == GLFW_KEY_S) {
+        playerTank.setMovingState(false, BACKWARD);
+    }
+
+    if (key == GLFW_KEY_A) {
+        playerTank.setMovingState(false, LEFT);
+    }
+
+    if (key == GLFW_KEY_D) {
+        playerTank.setMovingState(false, RIGHT);
+    }
+
+    if (key == GLFW_KEY_Q) {
+		playerTank.setCannonAimingState(false, UP);
+	}
+
+    if (key == GLFW_KEY_E) {
+		playerTank.setCannonAimingState(false, DOWN);
+	}
+}
 
 void Tanks3D::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
-    // add mouse move event
+    if (deltaX)
+    {
+        float turretRotationSpeed = -MOUSE_SENSITIVITY_OX * deltaX;
+        float cannonRotationSpeed = -MOUSE_SENSITIVITY_OX * deltaX;
+
+        float turretRotationAngle = playerTank.getTurret()->getRotationAngle();
+        float newTurretRotationAngle = turretRotationAngle + turretRotationSpeed;
+
+        playerTank.getTurret()->setRotationAngle(newTurretRotationAngle);
+    }
+    
+    
+    // TODO REMOVE WHAT IS AFTER THIS
 
     if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
     {
@@ -270,16 +283,12 @@ void Tanks3D::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
         if (window->GetSpecialKeyState() == 0) {
             renderCameraTarget = false;
-            // TODO : rotate the camera in First-person mode around OX and OY using deltaX and deltaY
-            // use the sensitivity variables for setting up the rotation speed
             camera->RotateFirstPerson_OX(-2 * sensivityOX * deltaY);
             camera->RotateFirstPerson_OY(-2 * sensivityOY * deltaX);
         }
 
         if (window->GetSpecialKeyState() && GLFW_MOD_CONTROL) {
             renderCameraTarget = true;
-            // TODO : rotate the camera in Third-person mode around OX and OY using deltaX and deltaY
-            // use the sensitivity variables for setting up the rotation speed
             camera->RotateThirdPerson_OX(-2 * sensivityOX * deltaY);
             camera->RotateThirdPerson_OY(-2 * sensivityOY * deltaX);
         }
