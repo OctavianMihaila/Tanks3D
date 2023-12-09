@@ -27,7 +27,7 @@ public:
     bool isMoving();
     bool isAiming();
     bool getMoving();
-    //float getRotation();
+    int getMovingDirection();
     Chassis* getChassis();
     Turret* getTurret();
     Cannon* getCannon();

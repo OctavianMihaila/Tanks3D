@@ -6,6 +6,8 @@
 #include "models/tank.h"
 
 #define MOUSE_SENSITIVITY_OX 0.01f
+#define DISTANCE_TO_TANK 3.0f
+#define HEIGHT_ABOVE_TANK 1.5f
 
 namespace m1
 {
@@ -35,8 +37,8 @@ namespace m1
         void OnWindowResize(int width, int height) override;
 
     protected:
-        bool renderCameraTarget;
         glm::mat4 projectionMatrix;
+        bool isLookingAround;
 
         Implemented::CameraAPI* camera;
         Renderer renderer;

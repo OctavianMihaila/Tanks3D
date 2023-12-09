@@ -19,6 +19,18 @@ glm::vec3 Tank::getPosition() {
 	return position;
 }
 
+int Tank::getMovingDirection() {
+	if (movingDirection == FORWARD) {
+		return 1;
+	}
+	
+	if (movingDirection == BACKWARD) {
+		return -1;
+	}
+
+	return 0;
+}
+
 Chassis* Tank::getChassis() {
 	return &chassis;
 }

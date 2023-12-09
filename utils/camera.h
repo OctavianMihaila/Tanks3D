@@ -16,6 +16,7 @@ namespace Implemented
             up          = glm::vec3(0, 1, 0);
             right       = glm::vec3(1, 0, 0);
             distanceToTarget = 2;
+            rotationAngle = 0;
         }
 
          CameraAPI(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
@@ -135,6 +136,8 @@ namespace Implemented
             TranslateForward(distanceToTarget);
             RotateFirstPerson_OY(angle);
             TranslateForward(-distanceToTarget);
+
+            rotationAngle += angle;
         }
 
         void RotateThirdPerson_OZ(float angle)
@@ -159,8 +162,14 @@ namespace Implemented
             return position + forward * distanceToTarget;
         }
 
+        float getRotationAngle()
+		{
+			return rotationAngle;
+		}
+
      public:
         float distanceToTarget;
+        float rotationAngle;
         glm::vec3 position;
         glm::vec3 forward;
         glm::vec3 right;

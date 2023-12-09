@@ -27,7 +27,7 @@ void Tanks3D::Init()
 {
     Mesh* mesh = nullptr;
     Shader* shader = nullptr;
-    renderCameraTarget = false;
+    isLookingAround = false;
     renderer = Renderer();
     camera = new Implemented::CameraAPI();
     Chassis chassis = Chassis();
@@ -35,7 +35,9 @@ void Tanks3D::Init()
     Turret turret = Turret();
     playerTank = Tank(chassis, turret, cannon);
     
-    camera->Set(glm::vec3(0, 2, 3.5f), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+    glm::vec3 tankPosition = playerTank.getPosition();
+    glm::vec3 cameraPosition = tankPosition + glm::vec3(0, HEIGHT_ABOVE_TANK, DISTANCE_TO_TANK);
+    camera->Set(cameraPosition, tankPosition, glm::vec3(0, 1, 0));
     projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
 
     mesh = new Mesh("track");
@@ -107,17 +109,31 @@ void Tanks3D::Update(float deltaTimeSeconds)
 {
     if (playerTank.isMoving()) {
         playerTank.move(deltaTimeSeconds);
+
+        // Update camera position based on the stored rotation angle
+        float storedRotationAngle = camera->getRotationAngle();
+        glm::vec3 tankPosition = playerTank.getPosition();
+
+        // Calculate the offset from the tank's position based on the stored rotation angle
+        float x = DISTANCE_TO_TANK * sin(storedRotationAngle);
+        float z = DISTANCE_TO_TANK * cos(storedRotationAngle);
+
+        glm::vec3 cameraPosition = tankPosition + glm::vec3(x, HEIGHT_ABOVE_TANK, z);
+        glm::vec3 cameraTarget = tankPosition;  // Camera looks at the tank
+
+        // Set the camera's position and target
+        camera->Set(cameraPosition, cameraTarget, glm::vec3(0, 1, 0));
     }
 
     if (playerTank.isAiming()) {
         playerTank.aim(deltaTimeSeconds);
     }
 
-
     renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, playerTank.getPosition(), playerTank.getChassis()->getRotationAngle());
     renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle());
     renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle(), playerTank.getCannon()->getRotationAngle());
 }
+
 
 
 void Tanks3D::FrameEnd()
@@ -127,67 +143,7 @@ void Tanks3D::FrameEnd()
 
 void Tanks3D::OnInputUpdate(float deltaTime, int mods)
 {
-    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
-    {
-        float cameraSpeed = 2.0f;
-
-        if (window->KeyHold(GLFW_KEY_U)) {
-            camera->TranslateForward(deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_H)) {
-            camera->TranslateRight(-deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_J)) {
-            camera->TranslateForward(-deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_K)) {
-            camera->TranslateRight(deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_Q)) {
-            camera->TranslateUpward(-deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_E)) {
-            camera->TranslateUpward(deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_O)) {
-            orthoLeft = -8.0f;
-            orthoRight = 8.0f;
-            orthoUp = 4.5f;
-            orthoDown = -4.5;
-            projectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoDown, orthoUp, 0.0f, 200.0f);
-            isOrtho = true;
-        }
-
-        if (window->KeyHold(GLFW_KEY_L)) {
-            projectionMatrix = glm::perspective(90.f, 2.f, 2.f, 200.0f);
-            isOrtho = false;
-        }
-
-        if (window->KeyHold(GLFW_KEY_K)) {
-            projectionMatrix = glm::perspective(45.f, 2.f, 2.f, 200.0f);
-            isOrtho = false;
-        }
-
-        if (window->KeyHold(GLFW_KEY_1)) {
-            orthoLeft += deltaTime * cameraSpeed;
-            projectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoDown, orthoUp, 0.0f, 200.0f);
-            isOrtho = true;
-        }
-
-        if (window->KeyHold(GLFW_KEY_2)) {
-            orthoLeft -= deltaTime * cameraSpeed;
-            projectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoDown, orthoUp, 0.0f, 200.0f);
-            isOrtho = true;
-        }
-
-    }
-
+   
 }
 
 
@@ -262,7 +218,7 @@ void Tanks3D::OnKeyRelease(int key, int mods)
 
 void Tanks3D::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
-    if (deltaX)
+    if (deltaX && !isLookingAround)
     {
         float turretRotationSpeed = -MOUSE_SENSITIVITY_OX * deltaX;
         float cannonRotationSpeed = -MOUSE_SENSITIVITY_OX * deltaX;
@@ -273,26 +229,22 @@ void Tanks3D::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
         playerTank.getTurret()->setRotationAngle(newTurretRotationAngle);
     }
     
-    
-    // TODO REMOVE WHAT IS AFTER THIS
+    // Rotate the camera around the tank
+    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
+        isLookingAround = true;
 
-    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
-    {
-        float sensivityOX = 0.001f;
-        float sensivityOY = 0.001f;
+        float sensitivityOX = 0.001f;
+        float sensitivityOY = 0.001f;
 
         if (window->GetSpecialKeyState() == 0) {
-            renderCameraTarget = false;
-            camera->RotateFirstPerson_OX(-2 * sensivityOX * deltaY);
-            camera->RotateFirstPerson_OY(-2 * sensivityOY * deltaX);
+            camera->RotateThirdPerson_OY(-2 * sensitivityOY * deltaX);
+        } else if (window->GetSpecialKeyState() && GLFW_MOD_CONTROL) {
+			camera->RotateThirdPerson_OX(-2 * sensitivityOX * deltaY);
+			camera->RotateThirdPerson_OY(-2 * sensitivityOY * deltaX);
         }
-
-        if (window->GetSpecialKeyState() && GLFW_MOD_CONTROL) {
-            renderCameraTarget = true;
-            camera->RotateThirdPerson_OX(-2 * sensivityOX * deltaY);
-            camera->RotateThirdPerson_OY(-2 * sensivityOY * deltaX);
-        }
-
+    }
+    else {
+        isLookingAround = false;
     }
 }
 
