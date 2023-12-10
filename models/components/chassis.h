@@ -7,7 +7,8 @@
 
 class Chassis {
 public:
-    Chassis();
+    Chassis::Chassis();
+    Chassis(Mesh* mesh);
     ~Chassis();
 
     float getRotationAngle();

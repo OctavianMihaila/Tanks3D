@@ -8,6 +8,7 @@
 class Cannon {
 public:
     Cannon();
+    Cannon(Mesh* mesh);
     ~Cannon();
 
     float getRotationAngle();

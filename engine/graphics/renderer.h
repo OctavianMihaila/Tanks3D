@@ -15,11 +15,11 @@ public:
     ~Renderer();
 
     void RenderChassis(const std::unordered_map<std::string, Mesh*>& meshes,
-        const std::unordered_map<std::string, Shader*>& shaders,
-        Implemented::CameraAPI* camera,
-        const glm::mat4& projectionMatrix,
-        const glm::vec3& position,
-        float chassisRotationAngle
+                        const std::unordered_map<std::string, Shader*>& shaders,
+                        Implemented::CameraAPI* camera,
+                        const glm::mat4& projectionMatrix,
+                        const glm::vec3& position,
+                        float chassisRotationAngle
     );
 
     void Renderer::RenderTurret(std::string name, Mesh* mesh, Shader* shader,
@@ -30,12 +30,23 @@ public:
     );
 
     void Renderer::RenderCannon(std::string name, Mesh* mesh, Shader* shader,
-        Implemented::CameraAPI* camera,
-        const glm::mat4& projectionMatrix,
-        const glm::vec3& position,
-        float turretRotationAngle,
-        float cannonRotationAngle
+                                Implemented::CameraAPI* camera,
+                                const glm::mat4& projectionMatrix,
+                                const glm::vec3& position,
+                                float turretRotationAngle,
+                                float cannonRotationAngle
     );
+
+    void Renderer::RenderShell(std::string name, Mesh* mesh, Shader* shader,
+                                const glm::mat4& projectionMatrix,
+                                const glm::vec3& position,
+                                float turretRotationAngle,
+                                float deltaTime
+    );
+
+    void Renderer::RenderBattlefield(std::string name, Mesh* mesh, Shader* shader,
+                                    const glm::mat4& projectionMatrix,
+                                    const glm::vec3& position);
 
 private:
     // Other member variables and functions...

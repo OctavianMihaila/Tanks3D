@@ -9,6 +9,7 @@
 class Turret {
 public:
     Turret();
+    Turret(Mesh* mesh);
     ~Turret();
 
     float getRotationAngle() const;

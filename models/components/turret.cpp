@@ -1,5 +1,10 @@
 #include "turret.h"
 
+Turret::Turret(Mesh* mesh) {
+	rotationAngle = 0;
+	mesh = mesh;
+}
+
 Turret::Turret() {
 	rotationAngle = 0;
 }

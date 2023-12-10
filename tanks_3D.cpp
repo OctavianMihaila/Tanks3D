@@ -28,17 +28,15 @@ void Tanks3D::Init()
     Mesh* mesh = nullptr;
     Shader* shader = nullptr;
     isLookingAround = false;
+    gameManager = GameManager();
     renderer = Renderer();
+
     camera = new Implemented::CameraAPI();
-    Chassis chassis = Chassis();
-    Cannon cannon = Cannon();
-    Turret turret = Turret();
-    playerTank = Tank(chassis, turret, cannon);
-    
-    glm::vec3 tankPosition = playerTank.getPosition();
-    glm::vec3 cameraPosition = tankPosition + glm::vec3(0, HEIGHT_ABOVE_TANK, DISTANCE_TO_TANK);
-    camera->Set(cameraPosition, tankPosition, glm::vec3(0, 1, 0));
     projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
+
+    mesh = new Mesh("field");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "Primitives"), "plane50.obj");
+    meshes[mesh->GetMeshID()] = mesh;
 
     mesh = new Mesh("track");
     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "track.obj");
@@ -55,6 +53,16 @@ void Tanks3D::Init()
     mesh = new Mesh("cannon");
     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "cannon.obj");
     meshes[mesh->GetMeshID()] = mesh;
+
+    mesh = new Mesh("shell");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "shell.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+
+    shader = new Shader("field");
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "PlaneVertexShader.glsl"), GL_VERTEX_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "PlaneFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+    shader->CreateAndLink();
+    shaders[shader->GetName()] = shader;
 
 	shader = new Shader("track");
 	shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "TrackVertexShader.glsl"), GL_VERTEX_SHADER);
@@ -79,6 +87,29 @@ void Tanks3D::Init()
     shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "CannonFragmentShader.glsl"), GL_FRAGMENT_SHADER);
     shader->CreateAndLink();
     shaders[shader->GetName()] = shader;
+
+    Chassis chassis = Chassis(meshes["chassis"]);
+    Cannon cannon = Cannon(meshes["cannon"]);
+    Turret turret = Turret(meshes["turret"]);
+    //Shell shell = Shell(meshes["shell"], glm::vec3(0.0f, 0.4f, 0.0f), playerTank.getCannon()->getRotationAngle());
+    // set the shell as null
+    shell = NULL;
+    playerTank = Tank(chassis, turret, cannon, false);
+    gameManager.SetPlayerTank(&playerTank);
+
+    glm::vec3 tankPosition = playerTank.getPosition();
+    glm::vec3 cameraPosition = tankPosition + glm::vec3(0, HEIGHT_ABOVE_TANK, DISTANCE_TO_TANK);
+    camera->Set(cameraPosition, tankPosition, glm::vec3(0, 1, 0));
+
+    // create three enemy tanks and add them to the game manager
+    for (int i = 0; i < 3; i++) {
+		Chassis enemyChassis = Chassis(meshes["chassis"]);
+		Cannon enemyCannon = Cannon(meshes["cannon"]);
+		Turret enemyTurret = Turret(meshes["turret"]);
+		Tank* enemyTank = new Tank(enemyChassis, enemyTurret, enemyCannon, true);
+        enemyTank->setPosition(UtilFunctions::GenerateRandomPositionInMap());
+		gameManager.AddTank(enemyTank);
+	}
 
     chassisMeshes = {
         {"track", meshes["track"]},
@@ -107,6 +138,10 @@ void Tanks3D::FrameStart()
 
 void Tanks3D::Update(float deltaTimeSeconds)
 {
+    // TODO: When moving the renderer into game manager, move this call as well. (in update from gameManager)
+    renderer.RenderBattlefield("field", meshes["field"], shaders["field"], projectionMatrix, glm::vec3(0.0f, 0.01f, 0.0f));
+    gameManager.Update(deltaTimeSeconds);
+
     if (playerTank.isMoving()) {
         playerTank.move(deltaTimeSeconds);
 
@@ -132,9 +167,54 @@ void Tanks3D::Update(float deltaTimeSeconds)
     renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, playerTank.getPosition(), playerTank.getChassis()->getRotationAngle());
     renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle());
     renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle(), playerTank.getCannon()->getRotationAngle());
+
+    vector<Shell*> playerBullets = gameManager.getPlayerBullets();
+
+    for (int i = 0; i < playerBullets.size(); i++) {
+		Shell *shell = playerBullets[i];
+		shell->update(deltaTimeSeconds);
+		renderer.RenderShell("shell", meshes["shell"], shaders["cannon"], projectionMatrix, shell->getPosition(), playerTank.getTurret()->getRotationAngle(), deltaTimeSeconds);
+
+        if (shell->shouldDestroy()) {
+			gameManager.RemoveBullet(shell, false);
+		}
+	}
+
+    vector<Shell*> enemyBullets = gameManager.getEnemyBullets();
+    for (int i = 0; i < enemyBullets.size(); i++) {
+        Shell *shell = enemyBullets[i];
+        shell->update(deltaTimeSeconds);
+        renderer.RenderShell("shell", meshes["shell"], shaders["cannon"], projectionMatrix, shell->getPosition(), playerTank.getTurret()->getRotationAngle(), deltaTimeSeconds);
+
+        if (shell->shouldDestroy()) {
+			gameManager.RemoveBullet(shell, true);
+		}
+    }
+
+    // ENEMY TANKS:
+    vector<Tank*> enemyTanks = gameManager.getEnemyTanks();
+    for (int i = 0; i < 1; i++) {
+        if (enemyTanks[i]->isMoving()) {
+			enemyTanks[i]->move(deltaTimeSeconds);
+		}
+
+        enemyTanks[i]->decreaseStateChangeInterval(deltaTimeSeconds);
+        enemyTanks[i]->deacreaseCooldown(deltaTimeSeconds);
+
+        if (enemyTanks[i]->isTimeToChangeState()) {
+			enemyTanks[i]->generateEnemyMoves(deltaTimeSeconds);
+		}
+
+        if (enemyTanks[i]->isTimeToShoot()) {
+			Shell* shell = enemyTanks[i]->launchShell(meshes["shell"], false);
+			gameManager.AddBullet(shell, true);
+		}
+
+        renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getChassis()->getRotationAngle());
+        renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getTurret()->getRotationAngle());
+        renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getTurret()->getRotationAngle(), enemyTanks[i]->getCannon()->getRotationAngle());
+    }
 }
-
-
 
 void Tanks3D::FrameEnd()
 {
@@ -251,7 +331,19 @@ void Tanks3D::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 void Tanks3D::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
-    // Add mouse button press event
+    // left click
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        bool isBallistic = false;
+        float turretRotationAngle = glm::degrees(playerTank.getTurret()->getRotationAngle());
+        float cannonRotationAngle = glm::degrees(playerTank.getCannon()->getRotationAngle());
+        
+        if (cannonRotationAngle > 0 && turretRotationAngle > -90.0f && turretRotationAngle < 90.0f) {
+            isBallistic = true;
+        }
+
+		Shell *shell = playerTank.launchShell(meshes["shell"], isBallistic);
+        gameManager.AddBullet(shell, false);
+	}
 }
 
 

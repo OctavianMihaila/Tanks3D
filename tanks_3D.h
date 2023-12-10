@@ -3,7 +3,9 @@
 #include "components/simple_scene.h"
 #include "utils/camera.h"
 #include "engine/graphics/renderer.h"
+#include "engine/game_manager.h"
 #include "models/tank.h"
+#include "utils/util_functions.h"
 
 #define MOUSE_SENSITIVITY_OX 0.01f
 #define DISTANCE_TO_TANK 3.0f
@@ -40,10 +42,12 @@ namespace m1
         glm::mat4 projectionMatrix;
         bool isLookingAround;
 
+        GameManager gameManager;
         Implemented::CameraAPI* camera;
         Renderer renderer;
         std::unordered_map<std::string, Mesh*> chassisMeshes;
         std::unordered_map<std::string, Shader*> chassisShaders;
         Tank playerTank;
+        Shell *shell;
     };
 }   // namespace m1

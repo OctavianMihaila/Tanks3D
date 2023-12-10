@@ -1,8 +1,13 @@
 // Cannon.cpp
 #include "Cannon.h"
 
-Cannon::Cannon() {
+Cannon::Cannon(Mesh* mesh) {
     rotationAngle = 0;
+	mesh = mesh;
+}
+
+Cannon::Cannon() {
+	rotationAngle = 0;
 }
 
 Cannon::~Cannon() {

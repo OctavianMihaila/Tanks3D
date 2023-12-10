@@ -1,6 +1,11 @@
 // Chassis.cpp
 #include "Chassis.h"
 
+Chassis::Chassis(Mesh *mesh) {
+	rotationAngle = 0;
+	mesh = mesh;
+}
+
 Chassis::Chassis() {
 	rotationAngle = 0;
 }
