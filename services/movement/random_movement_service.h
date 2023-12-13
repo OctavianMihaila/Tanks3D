@@ -11,6 +11,7 @@ public:
     RandomMovementService();
 
     enum class MovementState {
+        Stopped,
         GoingForward,
         GoingBackward,
         InPlaceRotationLeft,

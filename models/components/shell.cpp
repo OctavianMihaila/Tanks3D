@@ -1,16 +1,15 @@
 // Shell.cpp
 #include "shell.h"
 
-Shell::Shell(Mesh* mesh, glm::vec3 startingPosition, float cannonRotationAngle, float turretRotationAngle, bool isBallistic) {
+Shell::Shell(Mesh* mesh, glm::vec3 startingPosition, float cannonRotationAngle, float turretRotationAngle, bool isBallistic, bool isEnemy) {
 	mesh = mesh;
     position = startingPosition;
     this->isBallistic = isBallistic;
     this->turretRotationAngle = turretRotationAngle;
     this->cannonRotationAngle = cannonRotationAngle;
-
-    //std:: cout << "turret angle: " << turretRotationAngle << std::endl;
-    // print it in degrees
-    //std:: cout <<" turret in degrees: " << glm::degrees(turretRotationAngle) << std::endl;
+    this->boundingBoxSize = glm::vec3(0.4f, 0.4f, 0.4f);
+    this->enemy = isEnemy;
+    this->hasCollidedWithTank = false;
 
     if (isBallistic) {
         velocity = cannonRotationAngle * glm::vec3(-glm::degrees(turretRotationAngle), 20.0f, -20.0f);
@@ -35,8 +34,20 @@ void Shell::setPosition(glm::vec3 position) {
     this->destroy = false;
 }
 
+void Shell::setHasCollided(bool state) {
+	hasCollidedWithTank = state;
+}
+
 glm::vec3 Shell::getPosition() {
     return position;
+}
+
+glm::vec3 Shell::getBoundingBoxSize() {
+    return boundingBoxSize;
+}
+
+bool Shell::isEnemy() {
+	return enemy;
 }
 
 void Shell::update(float deltaTime) {
@@ -57,13 +68,16 @@ void Shell::update(float deltaTime) {
     }
 
     // destroy when reaches the ground
-    if (position.y <= 0.0f || ttl < 0) {
+    if (position.y <= 0.0f || ttl < 0 || hasCollidedWithTank) {
         destroy = true;
     }
 
     ttl -= deltaTime;
 }
 
+bool Shell::getHasCollidedWithTank() {
+    return hasCollidedWithTank;
+}
 
 
 bool Shell::shouldDestroy() {

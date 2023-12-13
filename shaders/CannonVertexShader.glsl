@@ -12,15 +12,10 @@ out vec3 fragNormal; // Output normal to fragment shader for lighting calculatio
 out vec3 fragTangent; // Output tangent to fragment shader for lighting calculations
 out vec3 fragBitangent; // Output bitangent to fragment shader for lighting calculations
 
+uniform vec3 baseColor; // Added baseColor as a uniform parameter
+
 void main()
 {
-   
-    vec3 baseColor = vec3(0.5, 0.5, 0.5);
-
-    // Add some variation based on the Y coordinate
-    float yVariation = (v_position.y + 1.0) * 0.5; // Normalize Y coordinate to [0, 1]
-    baseColor *= mix(0.8, 1.0, yVariation); // Fade the color based on Y coordinate
-
     fragColor = baseColor;
 
     // Transform the vertex position

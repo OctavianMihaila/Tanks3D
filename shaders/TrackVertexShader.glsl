@@ -7,28 +7,36 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
-out vec3 fragColor; // Output color to fragment shader
-out vec3 fragNormal; // Output normal to fragment shader for lighting calculations
-out vec3 fragTangent; // Output tangent to fragment shader for lighting calculations
-out vec3 fragBitangent; // Output bitangent to fragment shader for lighting calculations
+uniform vec3 baseColor; // Pass color as a uniform
+uniform float deformationParameter; // New uniform for deformation
+
+out vec3 fragColor;
+out vec3 fragNormal;
+out vec3 fragTangent;
+out vec3 fragBitangent;
 
 void main()
 {
-    // give me some grey or brown something like that
-    // vec3 baseColor = vec3(0.5, 0.5, 0.5);
-    // darker
-    vec3 baseColor = vec3(0.2, 0.2, 0.2);
+    // Add some distortion to the vertex position based on deformationParameter
+    float distortionStrength = 0.1;
+    vec3 distortedPosition;
 
-    // Add some variation based on the Y coordinate
-    float yVariation = (v_position.y + 1.0) * 0.5; // Normalize Y coordinate to [0, 1]
-    baseColor *= mix(0.8, 1.0, yVariation); // Fade the color based on Y coordinate
+    if (deformationParameter > 0.0) {
+        if (gl_VertexID % 2 == 0) {
+            distortedPosition = v_position + distortionStrength * vec3(sin(v_position.y * 10.0), cos(v_position.x * 10.0), sin(v_position.z * 10.0));
+        } else {
+            distortedPosition = v_position;
+        }
+    } else {
+        distortedPosition = v_position;
+    }
 
-    fragColor = baseColor;
+    float yVariation = (distortedPosition.y + 1.0) * 0.5;
+    vec3 finalColor = baseColor * mix(0.8, 1.0, yVariation);
 
-    // Transform the vertex position
-    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    fragColor = finalColor;
+    gl_Position = Projection * View * Model * vec4(distortedPosition, 1.0);
 
-    // Pass normal, tangent, and bitangent to the fragment shader
     fragNormal = normalize(mat3(Model) * v_normal);
     fragTangent = normalize(mat3(Model) * vec3(1.0, 0.0, 0.0));
     fragBitangent = normalize(mat3(Model) * cross(v_normal, fragTangent));

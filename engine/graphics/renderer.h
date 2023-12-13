@@ -19,14 +19,18 @@ public:
                         Implemented::CameraAPI* camera,
                         const glm::mat4& projectionMatrix,
                         const glm::vec3& position,
-                        float chassisRotationAngle
-    );
+                        float chassisRotationAngle,
+                        const glm::vec3& trackColor,
+                        const glm::vec3& bodyColor,
+                        int trackDamageLevel,
+                        bool isBodyDamaged);
 
     void Renderer::RenderTurret(std::string name, Mesh* mesh, Shader* shader,
                                 Implemented::CameraAPI* camera,
                                 const glm::mat4& projectionMatrix,
                                 const glm::vec3& position,
-                                float turretRotationAngle
+                                float turretRotationAngle,
+            					glm::vec3 color
     );
 
     void Renderer::RenderCannon(std::string name, Mesh* mesh, Shader* shader,
@@ -34,7 +38,8 @@ public:
                                 const glm::mat4& projectionMatrix,
                                 const glm::vec3& position,
                                 float turretRotationAngle,
-                                float cannonRotationAngle
+                                float cannonRotationAngle,
+                                glm::vec3 color
     );
 
     void Renderer::RenderShell(std::string name, Mesh* mesh, Shader* shader,
@@ -45,6 +50,11 @@ public:
     );
 
     void Renderer::RenderBattlefield(std::string name, Mesh* mesh, Shader* shader,
+                                    const glm::mat4& projectionMatrix,
+                                    const glm::vec3& position);
+
+    void Renderer::RenderBarracks(std::string name, Mesh* mesh, Shader* shader,
+                                    Implemented::CameraAPI* camera,
                                     const glm::mat4& projectionMatrix,
                                     const glm::vec3& position);
 

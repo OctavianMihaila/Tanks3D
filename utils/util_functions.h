@@ -6,10 +6,19 @@
 
 class UtilFunctions {
 public:
-    // Generate a random position inside a the center part of the map (25.0f).
+    // Generate a random position inside a the center part of the map (20.0f).
     static glm::vec3 GenerateRandomPositionInMap() {
-        float x = static_cast<float>(std::rand()) / RAND_MAX * 25.0f;
-        float z = static_cast<float>(std::rand()) / RAND_MAX * 25.0f;
+        // Use a random device to seed the random number generator
+        std::random_device rd;
+        std::mt19937 gen(rd());
+
+        // Define the distribution for x and z coordinates
+        std::uniform_real_distribution<float> dis(-20.0f, 20.0f);
+
+        // Generate random values for x and z
+        float x = dis(gen);
+        float z = dis(gen);
+
         return glm::vec3(x, 0.0f, z);
     }
 

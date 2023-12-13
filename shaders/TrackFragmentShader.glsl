@@ -6,8 +6,11 @@ in vec3 fragTangent;
 in vec3 fragBitangent;
 
 uniform sampler2D normalMap;
+uniform float deformationParameter; // New uniform for deformation
 
 layout(location = 0) out vec4 out_color;
+
+uniform vec3 color; // Uniform for color
 
 void main()
 {
@@ -17,8 +20,14 @@ void main()
     mat3 TBN = mat3(fragTangent, fragBitangent, fragNormal);
     vec3 normal = normalize(TBN * normalMapValue);
 
+    // Significant deformation for damaged state
+    if (deformationParameter > 0.0) {
+        normal += vec3(sin(gl_FragCoord.x / 10.0), cos(gl_FragCoord.y / 10.0), 0.0) * deformationParameter;
+        normal = normalize(normal);
+    }
+
     float ambientStrength = 0.2;
-    vec3 ambient = ambientStrength * fragColor;
+    vec3 ambient = ambientStrength * color; // Use the passed color uniform
 
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
@@ -34,7 +43,7 @@ void main()
 
     vec3 lightingColor = ambient + diffuse + specular;
 
-    vec3 finalColor = fragColor * lightingColor;
+    vec3 finalColor = color * lightingColor;
 
     out_color = vec4(finalColor, 1.0);
 }

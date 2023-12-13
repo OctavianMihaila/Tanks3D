@@ -34,8 +34,13 @@ void Tanks3D::Init()
     camera = new Implemented::CameraAPI();
     projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
 
+    // load a cube mesh
+    mesh = new Mesh("cube");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+
     mesh = new Mesh("field");
-    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "Primitives"), "plane50.obj");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "plane50.obj");
     meshes[mesh->GetMeshID()] = mesh;
 
     mesh = new Mesh("track");
@@ -58,9 +63,24 @@ void Tanks3D::Init()
     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tank components"), "shell.obj");
     meshes[mesh->GetMeshID()] = mesh;
 
+    mesh = new Mesh("horizontal_barracks");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "buildings"), "horizontal_barracks.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+
+
+    mesh = new Mesh("vertical_barracks");
+    mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "buildings"), "vertical_barracks.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+
     shader = new Shader("field");
-    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "PlaneVertexShader.glsl"), GL_VERTEX_SHADER);
-    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "PlaneFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "FieldVertexShader.glsl"), GL_VERTEX_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "FieldFragmentShader.glsl"), GL_FRAGMENT_SHADER);
+    shader->CreateAndLink();
+    shaders[shader->GetName()] = shader;
+
+    shader = new Shader("barracks");
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "BarracksVertexShader.glsl"), GL_VERTEX_SHADER);
+    shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "BarracksFragmentShader.glsl"), GL_FRAGMENT_SHADER);
     shader->CreateAndLink();
     shaders[shader->GetName()] = shader;
 
@@ -88,13 +108,12 @@ void Tanks3D::Init()
     shader->CreateAndLink();
     shaders[shader->GetName()] = shader;
 
-    Chassis chassis = Chassis(meshes["chassis"]);
-    Cannon cannon = Cannon(meshes["cannon"]);
-    Turret turret = Turret(meshes["turret"]);
-    //Shell shell = Shell(meshes["shell"], glm::vec3(0.0f, 0.4f, 0.0f), playerTank.getCannon()->getRotationAngle());
-    // set the shell as null
+    Chassis chassis = Chassis(glm::vec3(0.2, 0.2, 0.2), glm::vec3(0.1, 0.1, 0.05));
+    Cannon cannon = Cannon(meshes["cannon"], glm::vec3(0.5, 0.5, 0.5));
+    Turret turret = Turret(meshes["turret"], glm::vec3(0.3, 0.15, 0));
+
     shell = NULL;
-    playerTank = Tank(chassis, turret, cannon, false);
+    playerTank = Tank(chassis, turret, cannon, false, glm::vec3(0.2, 0.2, 0.2));
     gameManager.SetPlayerTank(&playerTank);
 
     glm::vec3 tankPosition = playerTank.getPosition();
@@ -103,12 +122,25 @@ void Tanks3D::Init()
 
     // create three enemy tanks and add them to the game manager
     for (int i = 0; i < 3; i++) {
-		Chassis enemyChassis = Chassis(meshes["chassis"]);
-		Cannon enemyCannon = Cannon(meshes["cannon"]);
-		Turret enemyTurret = Turret(meshes["turret"]);
-		Tank* enemyTank = new Tank(enemyChassis, enemyTurret, enemyCannon, true);
+		Chassis enemyChassis = Chassis(glm::vec3(0.7, 0.5, 0.1), glm::vec3(0.7, 0.5, 0.1));
+		Cannon enemyCannon = Cannon(meshes["cannon"], glm::vec3(0.3, 0.5f, 0.6f));
+		Turret enemyTurret = Turret(meshes["turret"], glm::vec3(0.2, 0.3, 0.7));
+        Tank* enemyTank = new Tank(enemyChassis, enemyTurret, enemyCannon, true, glm::vec3(1.3, 0.6, 2.3));
         enemyTank->setPosition(UtilFunctions::GenerateRandomPositionInMap());
 		gameManager.AddTank(enemyTank);
+	}
+
+    // create three randoom baracks
+    for (int i = 0; i < 3; i++) {
+        int barrackType = rand() % 2;
+        std::string type = barrackType == 0 ? "horizontal_barracks" : "vertical_barracks";
+        glm::vec3 barracksPosition = UtilFunctions::GenerateRandomPositionInMap();
+        while (gameManager.CheckPositionIsEmpty(barracksPosition, 3.0f, 6.0f) == false) {
+			barracksPosition = UtilFunctions::GenerateRandomPositionInMap();
+		}
+
+		Barracks* barracks = new Barracks(meshes[type], barracksPosition);
+		gameManager.AddBarracks(barracks);
 	}
 
     chassisMeshes = {
@@ -125,8 +157,7 @@ void Tanks3D::Init()
 
 void Tanks3D::FrameStart()
 {
-    // Clears the color buffer (using the previously set color) and depth buffer
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Dark grey color
+    glClearColor(0.0f, 0.596f, 0.804f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::ivec2 resolution = window->GetResolution();
@@ -139,11 +170,13 @@ void Tanks3D::FrameStart()
 void Tanks3D::Update(float deltaTimeSeconds)
 {
     // TODO: When moving the renderer into game manager, move this call as well. (in update from gameManager)
-    renderer.RenderBattlefield("field", meshes["field"], shaders["field"], projectionMatrix, glm::vec3(0.0f, 0.01f, 0.0f));
+
+    RenderMesh(meshes["field"], shaders["field"], glm::mat4(1)); // TODO: Make a function in rederer that has camera as param. Similar to barracks.
+
     gameManager.Update(deltaTimeSeconds);
 
     if (playerTank.isMoving()) {
-        playerTank.move(deltaTimeSeconds);
+        playerTank.move(deltaTimeSeconds, gameManager.isGameFinished());
 
         // Update camera position based on the stored rotation angle
         float storedRotationAngle = camera->getRotationAngle();
@@ -164,9 +197,9 @@ void Tanks3D::Update(float deltaTimeSeconds)
         playerTank.aim(deltaTimeSeconds);
     }
 
-    renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, playerTank.getPosition(), playerTank.getChassis()->getRotationAngle());
-    renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle());
-    renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle(), playerTank.getCannon()->getRotationAngle());
+    renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, playerTank.getPosition(), playerTank.getChassis()->getRotationAngle(), playerTank.getChassis()->getTrackColor(), playerTank.getChassis()->getBodyColor(), playerTank.getChassis()->getTrackDamageLevel(), playerTank.getChassis()->isBodyDamaged());
+    renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle(), playerTank.getTurret()->getColor());
+    renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, playerTank.getPosition(), playerTank.getTurret()->getRotationAngle(), playerTank.getCannon()->getRotationAngle(), playerTank.getCannon()->getColor());
 
     vector<Shell*> playerBullets = gameManager.getPlayerBullets();
 
@@ -193,9 +226,9 @@ void Tanks3D::Update(float deltaTimeSeconds)
 
     // ENEMY TANKS:
     vector<Tank*> enemyTanks = gameManager.getEnemyTanks();
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < enemyTanks.size(); i++) {
         if (enemyTanks[i]->isMoving()) {
-			enemyTanks[i]->move(deltaTimeSeconds);
+			enemyTanks[i]->move(deltaTimeSeconds, gameManager.isGameFinished());
 		}
 
         enemyTanks[i]->decreaseStateChangeInterval(deltaTimeSeconds);
@@ -205,16 +238,39 @@ void Tanks3D::Update(float deltaTimeSeconds)
 			enemyTanks[i]->generateEnemyMoves(deltaTimeSeconds);
 		}
 
-        if (enemyTanks[i]->isTimeToShoot()) {
+        if (enemyTanks[i]->isTimeToShoot() && !enemyTanks[i]->isDestroyed() && !gameManager.isGameFinished()) {
 			Shell* shell = enemyTanks[i]->launchShell(meshes["shell"], false);
 			gameManager.AddBullet(shell, true);
 		}
 
-        renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getChassis()->getRotationAngle());
-        renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getTurret()->getRotationAngle());
-        renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getTurret()->getRotationAngle(), enemyTanks[i]->getCannon()->getRotationAngle());
+        renderer.RenderChassis(chassisMeshes, chassisShaders, camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getChassis()->getRotationAngle(), enemyTanks[i]->getChassis()->getTrackColor(), enemyTanks[i]->getChassis()->getBodyColor(), enemyTanks[i]->getChassis()->getTrackDamageLevel(), enemyTanks[i]->getChassis()->isBodyDamaged());
+        renderer.RenderTurret("turret", meshes["turret"], shaders["turret"], camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getTurret()->getRotationAngle(), enemyTanks[i]->getTurret()->getColor());
+        renderer.RenderCannon("cannon", meshes["cannon"], shaders["cannon"], camera, projectionMatrix, enemyTanks[i]->getPosition(), enemyTanks[i]->getTurret()->getRotationAngle(), enemyTanks[i]->getCannon()->getRotationAngle(), enemyTanks[i]->getCannon()->getColor());
     }
+
+    // BARRACKS
+    vector<Barracks*> barracks = gameManager.getBarracksList();
+    for (int i = 0; i < barracks.size(); i++) {
+        // print position
+		renderer.RenderBarracks("horizontal_barracks", meshes["horizontal_barracks"], shaders["barracks"], camera, projectionMatrix, barracks[i]->getPosition());
+	}
+
 }
+
+void Tanks3D::RenderMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
+{
+    if (!mesh || !shader || !shader->program)
+        return;
+
+    // Render an object using the specified shader and the specified position
+    shader->Use();
+    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    mesh->Render();
+}
+
 
 void Tanks3D::FrameEnd()
 {
@@ -332,7 +388,7 @@ void Tanks3D::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 void Tanks3D::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
     // left click
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && !gameManager.isGameFinished()) {
         bool isBallistic = false;
         float turretRotationAngle = glm::degrees(playerTank.getTurret()->getRotationAngle());
         float cannonRotationAngle = glm::degrees(playerTank.getCannon()->getRotationAngle());

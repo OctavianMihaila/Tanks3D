@@ -1,9 +1,10 @@
 // Cannon.cpp
 #include "Cannon.h"
 
-Cannon::Cannon(Mesh* mesh) {
+Cannon::Cannon(Mesh* mesh, glm::vec3 color) {
     rotationAngle = 0;
-	mesh = mesh;
+	this->mesh = mesh; // TODO: check if useless
+	this->color = color;
 }
 
 Cannon::Cannon() {
@@ -18,14 +19,11 @@ float Cannon::getRotationAngle() {
 	return rotationAngle;
 }
 
+glm::vec3 Cannon::getColor() {
+	return color;
+}
+
 void Cannon::setRotationAngle(float angle) {
 	rotationAngle = angle;
 }
 
-//void Cannon::incrementRotationAngle(float angle) {
-//	rotationAngle += angle;
-//}
-//
-//void Cannon::decrementRotationAngle(float angle) {
-//	rotationAngle -= angle;
-//}

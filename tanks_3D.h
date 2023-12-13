@@ -28,7 +28,7 @@ namespace m1
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
-
+        void RenderMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix);
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
         void OnKeyRelease(int key, int mods) override;

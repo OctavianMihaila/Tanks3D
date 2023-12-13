@@ -1,14 +1,11 @@
 #include "random_movement_service.h"
-#include <cstdlib> // Include for std::rand and std::srand
+#include <cstdlib>
 
 RandomMovementService::RandomMovementService() {}
 
 RandomMovementService::MovementState RandomMovementService::GetNextMovementState(const MovementState currentState) {
     int randomChange;
     MovementState nextState = currentState;
-
-    // what i want is to be able to change from going forward or goind backward to one of the rotations or to follow the player.
-    // when i'm in rotation or follow player i want to be able to go forward or backward.
 
     switch (currentState) {
         case MovementState::GoingForward:
@@ -25,28 +22,6 @@ RandomMovementService::MovementState RandomMovementService::GetNextMovementState
         default:
 			break;
     }
-
-
-   // switch (currentState) {
-   //     case MovementState::GoingForward:
-   //     case MovementState::GoingBackward:
-   //         nextState = (randomChange == 1) ? MovementState::InPlaceRotationLeft : MovementState::InPlaceRotationRight;
-   //         break;
-
-   //     case MovementState::InPlaceRotationLeft:
-   //     case MovementState::InPlaceRotationRight:
-   //         nextState = (randomChange == 1) ? MovementState::GoingForward : MovementState::GoingBackward;
-   //         break;
-   //     case MovementState::FollowPlayerWithTurret:
-   //         randomChange = GetRandomNumberInRange(0, 2);
-   //         nextState = GetNextMovingStateAfterFollow(randomChange);
-			//break;
-
-   //     default:
-   //         break;
-   // }
-
-    std::cout << "RandomMovementService: Changed state from " << GetMovementStateName(currentState) << " to " << GetMovementStateName(nextState) << "\n";
 
     return nextState;
 }
