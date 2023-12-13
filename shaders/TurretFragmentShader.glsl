@@ -6,6 +6,7 @@ in vec3 fragTangent;
 in vec3 fragBitangent;
 
 uniform sampler2D normalMap;
+uniform vec3 baseColor; // Added baseColor as a uniform parameter
 
 layout(location = 0) out vec4 out_color;
 
@@ -18,7 +19,7 @@ void main()
     vec3 normal = normalize(TBN * normalMapValue);
 
     float ambientStrength = 0.2;
-    vec3 ambient = ambientStrength * fragColor;
+    vec3 ambient = ambientStrength * baseColor; // Use baseColor for ambient
 
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
@@ -34,7 +35,7 @@ void main()
 
     vec3 lightingColor = ambient + diffuse + specular;
 
-    vec3 finalColor = fragColor * lightingColor;
+    vec3 finalColor = baseColor * lightingColor; // Use baseColor for finalColor
 
     out_color = vec4(finalColor, 1.0);
 }

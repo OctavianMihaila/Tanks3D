@@ -9,13 +9,15 @@
 class Turret {
 public:
     Turret();
-    Turret(Mesh* mesh);
+    Turret::Turret(Mesh* mesh, glm::vec3 color);
     ~Turret();
 
     float getRotationAngle() const;
+    glm::vec3 getColor();
     void setRotationAngle(float angle);
 private:
     float rotationAngle;
     Mesh *mesh;
+    glm::vec3 color;
 };
 

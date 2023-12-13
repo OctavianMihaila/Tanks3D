@@ -8,35 +8,38 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
+// Input base color from C++
+uniform vec3 baseColor;
+
+// Input deformation parameter from C++
+uniform float deformationParameter;
+
 // Output color to fragment shader
 out vec3 fragColor;
+out float fragDeformation;
 
 void main()
 {
-    // Base color for the tank body
-    // vec3 baseColor = vec3(0.3, 0.3, 0.1); // Olive green base color
-    vec3 baseColor = vec3(0.1, 0.1, 0.05); // Darker olive green base color
+    // Define deformation strength
+    float deformationStrength = 0.1;
 
-    // vec3 baseColor = vec3(0.1, 0.2, 0.1);
+    // Apply deformation if deformationParameter is 1.0
+    vec3 deformedPosition = v_position;
+    if (deformationParameter == 1.0) {
+        // Create a dent using a combination of sine and cosine functions for irregularity
+        float randX = sin(v_position.x * 10.0) * cos(v_position.z * 5.0);
+        float randY = cos(v_position.y * 5.0) * sin(v_position.z * 10.0);
+        float deformation = deformationStrength * (randX + randY);
 
-    // Camouflage pattern colors
-    vec3 camoColor1 = vec3(0.2, 0.2, 0.0); // Dark brown
-    //vec3 camoColor2 = vec3(0.0, 0.05, 0.0); // Dark green
-    // give me grey camo
-    vec3 camoColor2 = vec3(0.2, 0.2, 0.2); // Dark grey
-
-    // Calculate camouflage pattern based on position
-    float patternScale = 10.0;
-    vec2 patternCoords = v_position.xz * patternScale;
-    float camoValue = fract(sin(dot(patternCoords, vec2(12.9898, 78.233))) * 43758.5453);
-
-    // Mix base color with camouflage pattern
-    vec3 finalColor = mix(baseColor, camoColor1, camoValue);
-    finalColor = mix(finalColor, camoColor2, camoValue);
-
-    // Apply the color to the fragment
-    fragColor = finalColor;
+        deformedPosition += deformation * normalize(v_position);
+    }
 
     // Transform the vertex position
-    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    gl_Position = Projection * View * Model * vec4(deformedPosition, 1.0);
+
+    // Pass the base color to the fragment shader
+    fragColor = baseColor;
+
+    // Pass the deformation parameter to the fragment shader
+    fragDeformation = deformationParameter;
 }

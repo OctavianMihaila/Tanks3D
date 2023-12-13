@@ -14,8 +14,7 @@ out vec3 fragBitangent; // Output bitangent to fragment shader for lighting calc
 
 void main()
 {
-    // Sand color
-    vec3 baseColor = vec3(0.93, 0.86, 0.64);
+    vec3 baseColor = vec3(0.65, 0.45, 0.0); // light brown
 
     // Add some variation based on the Y coordinate
     float yVariation = (v_position.y + 1.0) * 0.5; // Normalize Y coordinate to [0, 1]

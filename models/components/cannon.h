@@ -8,15 +8,15 @@
 class Cannon {
 public:
     Cannon();
-    Cannon(Mesh* mesh);
+    Cannon(Mesh* mesh, glm::vec3 color);
     ~Cannon();
 
     float getRotationAngle();
+    glm::vec3 getColor();
     void setRotationAngle(float angle);
-    //void incrementRotationAngle(float angle);
-    //void decrementRotationAngle(float angle);
 
 private:
     Mesh *mesh;
+    glm::vec3 color;
     float rotationAngle;
 };

@@ -2,6 +2,7 @@
 
 #include "utils/glm_utils.h"
 #include "utils/math_utils.h"
+#include <iostream>
 
 
 namespace Implemented
@@ -17,6 +18,7 @@ namespace Implemented
             right       = glm::vec3(1, 0, 0);
             distanceToTarget = 2;
             rotationAngle = 0;
+            previousChassisAngle = 0;
         }
 
          CameraAPI(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
@@ -26,6 +28,23 @@ namespace Implemented
 
         ~CameraAPI()
         { }
+
+        float getRotationAngle()
+        {
+            return rotationAngle;
+        }
+
+        void setRotationAngle(float angle) {
+            rotationAngle = angle;
+        }
+
+        void setPreviousChassisAngle(float angle) {
+			previousChassisAngle = angle;
+		}
+
+        void adjustRotationAngle(float currentChassisAngle) {
+			rotationAngle += currentChassisAngle - previousChassisAngle;
+		}
 
         // Update camera
         void Set(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
@@ -162,14 +181,10 @@ namespace Implemented
             return position + forward * distanceToTarget;
         }
 
-        float getRotationAngle()
-		{
-			return rotationAngle;
-		}
-
      public:
         float distanceToTarget;
         float rotationAngle;
+        float previousChassisAngle;
         glm::vec3 position;
         glm::vec3 forward;
         glm::vec3 right;
