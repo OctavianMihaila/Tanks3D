@@ -23,6 +23,7 @@
 class Tank {
 public:
     Tank(Chassis chassis, Turret turret, Cannon cannon, bool isEnemy, glm::vec3 color);
+    void determinateInitialState(int randomState);
     Tank();
     ~Tank();
 

@@ -125,12 +125,11 @@ void Renderer::RenderShell(std::string name, Mesh* mesh, Shader* shader,
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, position);
 
-    //// Scale it a little bit
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
-
     // rotate the bullet based on the turret's rotation angle
     modelMatrix = glm::rotate(modelMatrix, turretRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
+    //// Scale it a little bit
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 2.0f));
 
     shader->Use();
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));

@@ -28,7 +28,7 @@ RandomMovementService::MovementState RandomMovementService::GetNextMovementState
 
 RandomMovementService::MovementState RandomMovementService::GetNextStateAfterMoving(int randomChange)
 {
-    MovementState nextState = MovementState::GoingForward;
+    MovementState nextState; 
 
     switch (randomChange) {
         case 0:
@@ -39,6 +39,8 @@ RandomMovementService::MovementState RandomMovementService::GetNextStateAfterMov
             break;
         case 2:
             nextState = MovementState::InPlaceRotationRight;
+            break;
+        default:
             break;
     }
 

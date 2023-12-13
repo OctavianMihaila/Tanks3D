@@ -15,6 +15,7 @@ public:
     glm::vec3 getPosition();
     glm::vec3 getBoundingBoxSize();
     bool getHasCollidedWithTank();
+    float getRotationAngle();
     void setHasCollided(bool state);
 
     void update(float deltaTime);

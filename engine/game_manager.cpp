@@ -3,7 +3,7 @@
 GameManager::GameManager() {
     collisionHandlerService = CollisionHandlerService();
     this->score = 0;
-    this->timeLeft = 10.0f;
+    this->timeLeft = 90.0f;
     this->gameFinished = false;
 }
 

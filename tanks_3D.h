@@ -10,7 +10,7 @@
 #define MOUSE_SENSITIVITY_OX 0.01f
 #define DISTANCE_TO_TANK 3.0f
 #define HEIGHT_ABOVE_TANK 1.5f
-
+#define PI 3.14159265358979323846f
 namespace m1
 {
     class Tanks3D : public gfxc::SimpleScene
