@@ -65,7 +65,10 @@ void GameManager::RemoveDestroyedTanks() {
 			/*enemyTanks.erase(std::remove(enemyTanks.begin(), enemyTanks.end(), enemyTank),
                 							 enemyTanks.end());*/
             //enemyTank->setMovementState(RandomMovementService::MovementState::Stopped);
-            score += 100;
+            if (!enemyTank->arePointsCounted()) {
+				score += 100;
+				enemyTank->setPointsCounted(true);
+			}
 		}
 	}
 

@@ -11,6 +11,7 @@ Tank::Tank(Chassis chassis, Turret turret, Cannon cannon, bool isEnemy, glm::vec
 	this->moving = false;
 	this->aiming = false;
 	this->followingPlayer = false;
+	this->pointsCounted = false;
 	this->hp = 100.0f;
 	this->cooldown = 1.0f;
 	this->enemy = isEnemy;
@@ -117,6 +118,10 @@ bool Tank::isEnemy() {
 	return enemy;
 }
 
+bool Tank::arePointsCounted() {
+	return pointsCounted;
+}
+
 void Tank::setMovingState(bool state, int movingPosition) {
 	moving = state;
 	movingDirection = movingPosition;
@@ -145,9 +150,15 @@ void Tank::setDamagedComponents(int HP) {
 		case 30:
 			chassis.IncrementTrackDamageLevel();
 			break;
+		case 0:
+			break;
 		default:
 			break;
 	}
+}
+
+void Tank::setPointsCounted(bool state) {
+	pointsCounted = state;
 }
 
 void Tank::deacreaseHp(float damage) {
