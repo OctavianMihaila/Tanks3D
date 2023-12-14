@@ -23,5 +23,13 @@ std::string Barracks::getName() {
 }
 
 glm::vec3 Barracks::getBoundingBoxSize() {
-	return boundingBox;
+	if (name == "vertical_barracks") {
+		return glm::vec3(5.8f, 2.5f, 2.8f);
+	}
+	else if (name == "horizontal_barracks") {
+		return glm::vec3(2.8f, 2.5f, 5.8f);
+	}
+	else {
+		return glm::vec3(2.8f, 2.5f, 5.8f);
+	}
 }

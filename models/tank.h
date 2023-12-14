@@ -36,6 +36,7 @@ public:
     bool isFollowingPlayer();
     bool isDestroyed();
     bool getMoving();
+    bool arePointsCounted();
     bool isTimeToShoot();
     bool isEnemy();
     int getMovingDirection();
@@ -46,6 +47,7 @@ public:
     Cannon* getCannon();
     void setMovingState(bool state, int movingPosition);
     void setPosition(glm::vec3 position);
+    void setPointsCounted(bool state);
     void deacreaseHp(float damage);
     void decreaseStateChangeInterval(float deltaTime);
     void deacreaseCooldown(float deltaTime);
@@ -73,6 +75,7 @@ private:
     bool aiming;
     bool enemy;
     bool followingPlayer;
+    bool pointsCounted;
     // add moving direction attribute
     int movingDirection;
     int cannonDirection;
