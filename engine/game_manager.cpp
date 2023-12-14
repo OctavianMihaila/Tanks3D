@@ -1,11 +1,18 @@
 #include "game_manager.h"
 
-GameManager::GameManager() {
-    collisionHandlerService = CollisionHandlerService();
+GameManager::GameManager(std::unordered_map<std::string, Mesh*> meshes) {
+    this->collisionHandlerService = CollisionHandlerService();
     this->score = 0;
     this->timeLeft = 90.0f;
     this->gameFinished = false;
+
+    Chassis chassis = Chassis(glm::vec3(0.2, 0.2, 0.2), glm::vec3(0.1, 0.1, 0.05));
+    Cannon cannon = Cannon(meshes["cannon"], glm::vec3(0.5, 0.5, 0.5));
+    Turret turret = Turret(meshes["turret"], glm::vec3(0.3, 0.15, 0));
+    this->playerTank = new Tank(chassis, turret, cannon, false, glm::vec3(0.2, 0.2, 0.2));
 }
+
+GameManager::GameManager() {}
 
 std::vector<Shell*> GameManager::getEnemyBullets() {
 	return enemyBullets;
@@ -23,6 +30,10 @@ std::vector<Barracks*> GameManager::getBarracksList() {
 	return barracksList;
 }
 
+Tank* GameManager::getPlayerTank() {
+	return playerTank;
+}
+
 bool GameManager::isGameFinished() {
 	return gameFinished;
 }
@@ -35,25 +46,24 @@ void GameManager::AddBarracks(Barracks* barracks) {
 	barracksList.push_back(barracks);
 }
 
-void GameManager::SetPlayerTank(Tank* playerTank) {
-    this->playerTank = playerTank;
+void GameManager::AddBullet(Shell* bullet, bool isEnemy) {
+    if (isEnemy) {
+        enemyBullets.push_back(bullet);
+    }
+    else {
+        playerBullets.push_back(bullet);
+    }
 }
 
-void GameManager::AddBullet(Shell* bullet, bool isEnemy) {
-	if (isEnemy) {
-		enemyBullets.push_back(bullet);
-	}
-	else {
-		playerBullets.push_back(bullet);
-	}
+void GameManager::SetPlayerTank(Tank* playerTank) {
+    this->playerTank = playerTank;
 }
 
 void GameManager::RemoveBullet(Shell* bullet, bool isEnemy) {
 	if (isEnemy) {
 		enemyBullets.erase(std::remove(enemyBullets.begin(), enemyBullets.end(), bullet),
 						enemyBullets.end());
-	}
-	else {
+	} else {
 		playerBullets.erase(std::remove(playerBullets.begin(), playerBullets.end(), bullet),
 									playerBullets.end());
 	}
@@ -62,9 +72,6 @@ void GameManager::RemoveBullet(Shell* bullet, bool isEnemy) {
 void GameManager::RemoveDestroyedTanks() {
     for (auto& enemyTank : enemyTanks) {
         if (enemyTank->isDestroyed()) {
-			/*enemyTanks.erase(std::remove(enemyTanks.begin(), enemyTanks.end(), enemyTank),
-                							 enemyTanks.end());*/
-            //enemyTank->setMovementState(RandomMovementService::MovementState::Stopped);
             if (!enemyTank->arePointsCounted()) {
 				score += 100;
 				enemyTank->setPointsCounted(true);
@@ -73,7 +80,6 @@ void GameManager::RemoveDestroyedTanks() {
 	}
 
     if (playerTank->isDestroyed() && !gameFinished) {
-        //playerTank->setMovementState(RandomMovementService::MovementState::Stopped);
         std::cout << "GAME OVER. YOU LOST !" << std::endl;
         gameFinished = true;
 	}
@@ -99,7 +105,6 @@ bool GameManager::CheckPositionIsEmpty(glm::vec3 position, float areaX, float ar
         }
     }
 
-    // also for player's tank
     if (playerTank != nullptr) {
         glm::vec3 playerTankPos = playerTank->getPosition();
         if (std::abs(playerTankPos.x - position.x) < areaX && std::abs(playerTankPos.z - position.z) < areaZ) {
@@ -120,12 +125,11 @@ bool CheckIfAllEnemiesAreDestroyed(std::vector<Tank*> enemyTanks) {
 	return true;
 }
 
-// TODO: MOVE TANK MOVEMENT LOGIC FROM UPDATE(MAIN) IN THERE. SEE TODOs
 void GameManager::Update(float deltaTime) {
-    // Update time left
     timeLeft -= deltaTime;
+    playerTank->deacreaseCooldown(deltaTime);
 
-    // if time is up, print the score
+    // If time is up, print the score.
     if (timeLeft <= 0 && !gameFinished) {
 		std::cout << "GAME OVER. YOU WON !" << std::endl;
 		std::cout << "Score: " << score << std::endl;
@@ -141,32 +145,25 @@ void GameManager::Update(float deltaTime) {
 		gameFinished = true;
     }
 
-    // Update player tank
-    //playerTank.Update(deltaTime);  // TODOOOO
-
-    // Check and handle the player tank's position within the world boundaries
+    // Check and handle the player tank's position within the world boundaries.
     glm::vec3& playerTankPosition = playerTank->getPosition();
+
     if (playerTankPosition.x < -MAP_SIZE_X || playerTankPosition.x > MAP_SIZE_X ||
         playerTankPosition.z < -MAP_SIZE_Z || playerTankPosition.z > MAP_SIZE_Z) {
-        // Tank is attempting to leave the map, turn it back a little bit
+        // Tank is attempting to leave the map, turn it back a little bit.
         playerTankPosition.x = glm::clamp(playerTankPosition.x, -MAP_SIZE_X, MAP_SIZE_X);
         playerTankPosition.z = glm::clamp(playerTankPosition.z, -MAP_SIZE_Z, MAP_SIZE_Z);
         glm::vec3 newPosition = glm::vec3(playerTankPosition.x, playerTankPosition.y, playerTankPosition.z);
         playerTank->setPosition(newPosition);
 
-    /*    playerTankPosition.x = 24.0f;
-        playerTankPosition.z = 24.0f;*/
-
-        // You may want to modify the tank's orientation here to give a turning-back effect
-        // For example, adjust the tank's rotation angle or apply a force to simulate the turn.
+        playerTankPosition.z = 24.0f;
     }
 
-    // Update enemy tanks
+    // Update enemy tanks.
     for (auto& enemyTank : enemyTanks) {
-        //enemyTank->Update(deltaTime); // TODOOOO
+        glm::vec3& enemyTankPosition = enemyTank->getPosition();
 
         // Check and handle the enemy tank's position within the world boundaries
-        glm::vec3& enemyTankPosition = enemyTank->getPosition();
         if (enemyTankPosition.x < -MAP_SIZE_X || enemyTankPosition.x > MAP_SIZE_X ||
             enemyTankPosition.z < -MAP_SIZE_Z || enemyTankPosition.z > MAP_SIZE_Z) {
             // Tank is attempting to leave the map, turn it back a little bit
@@ -174,9 +171,6 @@ void GameManager::Update(float deltaTime) {
             enemyTankPosition.z = glm::clamp(enemyTankPosition.z, -MAP_SIZE_Z, MAP_SIZE_Z);
             glm::vec3 newPosition = glm::vec3(enemyTankPosition.x, enemyTankPosition.y, enemyTankPosition.z);
             enemyTank->setPosition(newPosition);
-
-            // You may want to modify the enemy tank's orientation here to give a turning-back effect
-            // For example, adjust the tank's rotation angle or apply a force to simulate the turn.
         }
 
         if (enemyTank->isFollowingPlayer()) {
@@ -189,17 +183,16 @@ void GameManager::Update(float deltaTime) {
 		}
     }
 
-    // check for collisions between player tank and enemy tanks
+    // Collision detection and handling.
+
     for (auto& enemyTank : enemyTanks) {
 		collisionHandlerService.HandleTankTankCollision(playerTank, enemyTank);
 	}
 
-    // check for collisions between player tank and enemy bullets
     for (auto& enemyBullet : enemyBullets) {
 		collisionHandlerService.HandleTankShellCollision(playerTank, enemyBullet);
 	}
 
-	// check for collisions between enemy tanks and player bullets
     for (auto& enemyTank : enemyTanks) {
         for (auto& playerBullet : playerBullets) {
 			collisionHandlerService.HandleTankShellCollision(enemyTank, playerBullet);
@@ -207,16 +200,12 @@ void GameManager::Update(float deltaTime) {
 
 	}
 
-    // check collisions with barracks
     for (auto& barracks : barracksList) {
 		collisionHandlerService.HandleTankBaracksCollision(playerTank, barracks);
 
-        // with enemy tanks
         for (auto& enemyTank : enemyTanks) {
             collisionHandlerService.HandleTankBaracksCollision(enemyTank, barracks);
         }
-
-        // collision with bullets
 
         for (auto& playerBullet : playerBullets) {
 			collisionHandlerService.HandleShellBaracksCollision(playerBullet, barracks);
@@ -227,13 +216,5 @@ void GameManager::Update(float deltaTime) {
 		}
 	}
     
-	//// check for collisions between enemy tanks and enemy bullets
- //   for (auto& enemyTank : enemyTanks) {
- //       for (auto& enemyBullet : enemyBullets) {
-	//		collisionHandlerService.HandleTankShellCollision(enemyTank, enemyBullet);
-	//	}
-	//}
-
-
     RemoveDestroyedTanks();
 }

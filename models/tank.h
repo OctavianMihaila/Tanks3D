@@ -30,58 +30,57 @@ public:
     glm::vec3 getPosition();
     glm::vec3 getColor();
     float getHp();
+    bool getMoving();
+    int getMovingDirection();
+    glm::vec3 getBoundingBoxSize() const;
+    Chassis* getChassis();
+    Turret* getTurret();
+    Cannon* getCannon();
+    RandomMovementService::MovementState getCurrentMovementState();
+    void setMovingState(bool state, int movingPosition);
+    void setPosition(glm::vec3 position);
+    void setPointsCounted(bool state);
+    void setDamagedComponents(int HP);
+    void setCannonAimingState(bool state, int cannonPosition);
+    void setFollowingPlayer(bool state);
+    void setMovementState(RandomMovementService::MovementState state);
     bool isMoving();
     bool isAiming();
     bool isTimeToChangeState();
     bool isFollowingPlayer();
     bool isDestroyed();
-    bool getMoving();
     bool arePointsCounted();
     bool isTimeToShoot();
     bool isEnemy();
-    int getMovingDirection();
-    glm::vec3 getBoundingBoxSize() const;
-    RandomMovementService::MovementState getCurrentMovementState();
-    Chassis* getChassis();
-    Turret* getTurret();
-    Cannon* getCannon();
-    void setMovingState(bool state, int movingPosition);
-    void setPosition(glm::vec3 position);
-    void setPointsCounted(bool state);
     void deacreaseHp(float damage);
     void decreaseStateChangeInterval(float deltaTime);
     void deacreaseCooldown(float deltaTime);
-    void setDamagedComponents(int HP);
-    void setCannonAimingState(bool state, int cannonPosition);
-    void setFollowingPlayer(bool state);
-    void setMovementState(RandomMovementService::MovementState state);
     void generateEnemyMoves(float deltaTime);
     void move(float deltaTime, bool gameStatus);
     void aim(float deltaTime);
     void followPlayerWithTurret(Tank* playerTank);
     Shell* launchShell(Mesh* mesh, bool isBallistic);
+
 private:
-    // Tank components
     Chassis chassis;
     Turret turret;
     Cannon cannon;
 
-    // Tank properties
     glm::vec3 position;
     glm::vec3 boundingBoxSize;
     glm::vec3 color;
-    //float rotation;
+
+    int movingDirection;
+    int cannonDirection;
     bool moving;
     bool aiming;
     bool enemy;
     bool followingPlayer;
     bool pointsCounted;
-    // add moving direction attribute
-    int movingDirection;
-    int cannonDirection;
-    RandomMovementService::MovementState currentMovementState;
-    RandomMovementService randomMovementService;
     float hp;
     float stateChangeInterval;
     float cooldown;
+
+    RandomMovementService::MovementState currentMovementState;
+    RandomMovementService randomMovementService;
 };

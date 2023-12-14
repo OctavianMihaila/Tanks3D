@@ -12,13 +12,13 @@ public:
     ~Chassis();
 
     float getRotationAngle();
-    bool isBodyDamaged();
-    void setBodyDamaged(bool damaged);
     glm::vec3 getTrackColor();
     glm::vec3 getBodyColor();
-    void setRotationAngle(float angle);
-    void IncrementTrackDamageLevel();
     int getTrackDamageLevel();
+    void setBodyDamaged(bool damaged);
+    void setRotationAngle(float angle);
+    bool isBodyDamaged();
+    void IncrementTrackDamageLevel();
 
 private:
     float rotationAngle;

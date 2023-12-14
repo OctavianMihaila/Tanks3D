@@ -9,8 +9,6 @@ out vec4 out_color;
 
 void main()
 {
-    // No need for normal map in this example
-
     float ambientStrength = 0.3;
     vec3 ambient = ambientStrength * fragColor;
 

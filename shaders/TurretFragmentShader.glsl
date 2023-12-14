@@ -6,7 +6,7 @@ in vec3 fragTangent;
 in vec3 fragBitangent;
 
 uniform sampler2D normalMap;
-uniform vec3 baseColor; // Added baseColor as a uniform parameter
+uniform vec3 baseColor;
 
 layout(location = 0) out vec4 out_color;
 
@@ -15,11 +15,12 @@ void main()
     vec3 normalMapValue = texture(normalMap, gl_FragCoord.xy / 800.0).rgb;
     normalMapValue = normalize(normalMapValue * 2.0 - 1.0);
 
+    // TBN matrix. Used to transform normal map values to world space.
     mat3 TBN = mat3(fragTangent, fragBitangent, fragNormal);
     vec3 normal = normalize(TBN * normalMapValue);
 
     float ambientStrength = 0.2;
-    vec3 ambient = ambientStrength * baseColor; // Use baseColor for ambient
+    vec3 ambient = ambientStrength * baseColor;
 
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
@@ -27,6 +28,7 @@ void main()
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
+    // Specular lighting. Some magic here.
     float specularStrength = 0.5;
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0) - gl_FragCoord.xyz);
     vec3 reflectDir = reflect(-lightDir, normal);
@@ -35,7 +37,7 @@ void main()
 
     vec3 lightingColor = ambient + diffuse + specular;
 
-    vec3 finalColor = baseColor * lightingColor; // Use baseColor for finalColor
+    vec3 finalColor = baseColor * lightingColor;
 
     out_color = vec4(finalColor, 1.0);
 }

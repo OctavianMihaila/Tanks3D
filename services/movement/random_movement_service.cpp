@@ -60,6 +60,5 @@ std::string RandomMovementService::GetMovementStateName(const MovementState stat
 }
 
 int RandomMovementService::GetRandomNumberInRange(const int minInclusive, const int maxInclusive) const {
-    // Use std::rand and std::srand for simplicity
     return minInclusive + std::rand() % (maxInclusive - minInclusive + 1);
 }

@@ -19,15 +19,13 @@ Tank::Tank(Chassis chassis, Turret turret, Cannon cannon, bool isEnemy, glm::vec
 
 	if (isEnemy) {
 		int randomState = rand() % 4;
-
 		determinateInitialState(randomState);
 	}
 }
 
 Tank::Tank() {}
 
-Tank::~Tank() {
-}
+Tank::~Tank() {}
 
 glm::vec3 Tank::getPosition() {
 	return position;
@@ -231,7 +229,7 @@ void Tank::generateEnemyMoves(float deltaTime) {
 }
 
 void Tank::move(float deltaTime, bool gameStatus) {
-	if (isDestroyed() || gameStatus == FINISHED) { // Destroyed tanks can't move
+	if (isDestroyed() || gameStatus == FINISHED) { // Destroyed tanks can't move.
 		return;
 	}
 
@@ -284,7 +282,7 @@ void Tank::aim(float deltaTime) {
 
 void Tank::followPlayerWithTurret(Tank* playerTank) {
 	if (enemy) {
-		// Calculate direction from enemy tank to player tank
+		// Calculate direction from enemy tank to player tank.
 		glm::vec3 direction = glm::normalize(playerTank->getPosition() - position);
 	
 		float turretRotation = atan2(direction.x, direction.z) + glm::radians(180.0f);
@@ -293,21 +291,19 @@ void Tank::followPlayerWithTurret(Tank* playerTank) {
 }
 
 Shell* Tank::launchShell(Mesh* mesh, bool isBallistic) {
-	// Calculate the starting position of the shell. It should be the end of the cannon
+	// Calculate the starting position of the shell. It should be the end of the cannon.
 	float cannonAngleOffset = cannon.getRotationAngle() * 0.2f;
 	
-	// calulate z based on rotation angle of the turret
-
 	glm::vec3 startPosition = position + glm::vec3(0.0f, 0.4f + cannonAngleOffset, 0.0f) + cannon.getRotationAngle() * 0.05f;
 
-	// Enemy tanks should not be able to shoot shells that are too far away from them
+	// Enemy tanks should not be able to shoot shells that are too far away from them.
 	if (enemy) {
 		if (std::abs(position.x - startPosition.x) > 7.0f || std::abs(position.z - startPosition.z) > 7.0f) {
 			return nullptr;
 		}
 	}
 
-	// Create and return the shell
 	Shell* shell = new Shell(mesh, startPosition, cannon.getRotationAngle(), turret.getRotationAngle(), isBallistic, enemy);
+
 	return shell;
 }
