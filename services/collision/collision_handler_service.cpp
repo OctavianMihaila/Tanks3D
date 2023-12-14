@@ -76,11 +76,13 @@ bool CollisionHandlerService::BoundingBoxIntersect(Tank* tank, Barracks* barrack
 }
 
 bool CollisionHandlerService::BoundingBoxIntersect(Shell* shell, Barracks* barracks) {
-    glm::vec3 shellMin = shell->getPosition() - shell->getBoundingBoxSize() / 2.0f;
-    glm::vec3 shellMax = shell->getPosition() + shell->getBoundingBoxSize() / 2.0f;
+    // Offset that prevent the shell from despawn when going very close to the building.
+    glm::vec3 buildingOffset = glm::vec3(0.8f, 0.0f, 0.8f); 
+    glm::vec3 shellMin = shell->getPosition() - (shell->getBoundingBoxSize() - buildingOffset) / 2.0f;
+    glm::vec3 shellMax = shell->getPosition() + (shell->getBoundingBoxSize()  - buildingOffset) / 2.0f;
 
-    glm::vec3 barracksMin = barracks->getPosition() - barracks->getBoundingBoxSize() / 2.0f;
-    glm::vec3 barracksMax = barracks->getPosition() + barracks->getBoundingBoxSize() / 2.0f;
+    glm::vec3 barracksMin = barracks->getPosition() - (barracks->getBoundingBoxSize() - buildingOffset) / 2.0f;
+    glm::vec3 barracksMax = barracks->getPosition() + (barracks->getBoundingBoxSize() - buildingOffset) / 2.0f;
 
     // Check for intersection
     if (shellMin.x < barracksMax.x && shellMax.x > barracksMin.x &&
