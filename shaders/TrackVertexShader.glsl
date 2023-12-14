@@ -7,8 +7,8 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
-uniform vec3 baseColor; // Pass color as a uniform
-uniform float deformationParameter; // New uniform for deformation
+uniform vec3 baseColor;
+uniform float deformationParameter;
 
 out vec3 fragColor;
 out vec3 fragNormal;
@@ -17,7 +17,7 @@ out vec3 fragBitangent;
 
 void main()
 {
-    // Add some distortion to the vertex position based on deformationParameter
+    // Add some distortion to the vertex position based on deformationParameter.
     float distortionStrength = 0.1;
     vec3 distortedPosition;
 

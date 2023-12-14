@@ -31,4 +31,4 @@ private:
     int GetRandomNumberInRange(const int minInclusive, const int maxInclusive) const;
 };
 
-#endif // RANDOM_MOVEMENT_SERVICE_H
+#endif

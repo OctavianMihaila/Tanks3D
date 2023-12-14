@@ -18,17 +18,15 @@ void main()
     vec3 normal = normalize(TBN * normalMapValue);
 
     float ambientStrength = 0.2;
+    
     vec3 ambient = ambientStrength * fragColor;
-
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
 
     float diff = max(dot(normal, lightDir), 0.0);
+
     vec3 diffuse = diff * lightColor;
-
-    // No specular component (remove the specular calculation)
     vec3 lightingColor = ambient + diffuse;
-
     vec3 finalColor = fragColor * lightingColor;
 
     out_color = vec4(finalColor, 1.0);

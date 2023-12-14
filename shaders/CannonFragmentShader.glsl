@@ -6,7 +6,7 @@ in vec3 fragTangent;
 in vec3 fragBitangent;
 
 uniform sampler2D normalMap;
-uniform vec3 baseColor; // Added baseColor as a uniform parameter
+uniform vec3 baseColor;
 
 layout(location = 0) out vec4 out_color;
 

@@ -3,7 +3,7 @@
 
 Cannon::Cannon(Mesh* mesh, glm::vec3 color) {
     rotationAngle = 0;
-	this->mesh = mesh; // TODO: check if useless
+	this->mesh = mesh;
 	this->color = color;
 }
 
@@ -11,9 +11,7 @@ Cannon::Cannon() {
 	rotationAngle = 0;
 }
 
-Cannon::~Cannon() {
-    // Clean up resources
-}
+Cannon::~Cannon() {}
 
 float Cannon::getRotationAngle() {
 	return rotationAngle;

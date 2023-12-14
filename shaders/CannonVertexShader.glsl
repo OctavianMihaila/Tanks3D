@@ -7,21 +7,19 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
-out vec3 fragColor; // Output color to fragment shader
-out vec3 fragNormal; // Output normal to fragment shader for lighting calculations
-out vec3 fragTangent; // Output tangent to fragment shader for lighting calculations
-out vec3 fragBitangent; // Output bitangent to fragment shader for lighting calculations
+out vec3 fragColor;
+out vec3 fragNormal;
+out vec3 fragTangent;
+out vec3 fragBitangent;
 
-uniform vec3 baseColor; // Added baseColor as a uniform parameter
-
+uniform vec3 baseColor;
 void main()
 {
     fragColor = baseColor;
 
-    // Transform the vertex position
     gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 
-    // Pass normal, tangent, and bitangent to the fragment shader
+    // Pass normal, tangent, and bitangent to the fragment shader.
     fragNormal = normalize(mat3(Model) * v_normal);
     fragTangent = normalize(mat3(Model) * vec3(1.0, 0.0, 0.0));
     fragBitangent = normalize(mat3(Model) * cross(v_normal, fragTangent));

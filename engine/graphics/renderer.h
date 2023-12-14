@@ -1,11 +1,10 @@
-// Renderer.h
 #pragma once
 
 #include <iostream>
 #include <glm/glm.hpp>
 #include "components/simple_scene.h"
 #include "../../utils/camera.h"
-
+#include "../../models/tank.h"
 #define CANNON_VERTICAL_AJUSTMENT_COEF 4.2f
 #define CANNON_HORIZONTAL_AJUSTMENT_COEF 3.5f
 
@@ -18,38 +17,25 @@ public:
                         const std::unordered_map<std::string, Shader*>& shaders,
                         Implemented::CameraAPI* camera,
                         const glm::mat4& projectionMatrix,
-                        const glm::vec3& position,
-                        float chassisRotationAngle,
-                        const glm::vec3& trackColor,
-                        const glm::vec3& bodyColor,
-                        int trackDamageLevel,
-                        bool isBodyDamaged);
+                        Tank *playerTank);
 
     void Renderer::RenderTurret(std::string name, Mesh* mesh, Shader* shader,
                                 Implemented::CameraAPI* camera,
                                 const glm::mat4& projectionMatrix,
-                                const glm::vec3& position,
-                                float turretRotationAngle,
-            					glm::vec3 color
-    );
+                                Tank* playerTank);
 
     void Renderer::RenderCannon(std::string name, Mesh* mesh, Shader* shader,
                                 Implemented::CameraAPI* camera,
                                 const glm::mat4& projectionMatrix,
-                                const glm::vec3& position,
-                                float turretRotationAngle,
-                                float cannonRotationAngle,
-                                glm::vec3 color
-    );
+                                Tank* playerTank);
 
     void Renderer::RenderShell(std::string name, Mesh* mesh, Shader* shader,
                                 const glm::mat4& projectionMatrix,
-                                const glm::vec3& position,
-                                float turretRotationAngle,
-                                float deltaTime
-    );
+                                Shell* shell,
+                                float deltaTime);
 
     void Renderer::RenderBattlefield(std::string name, Mesh* mesh, Shader* shader,
+                                    Implemented::CameraAPI* camera,
                                     const glm::mat4& projectionMatrix,
                                     const glm::vec3& position);
 
@@ -57,7 +43,4 @@ public:
                                     Implemented::CameraAPI* camera,
                                     const glm::mat4& projectionMatrix,
                                     const glm::vec3& position);
-
-private:
-    // Other member variables and functions...
 };

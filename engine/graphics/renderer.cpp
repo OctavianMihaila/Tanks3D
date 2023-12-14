@@ -1,30 +1,27 @@
-// Renderer.cpp
 #include "Renderer.h"
 
-Renderer::Renderer() {
-    // Initialize other members
-}
+Renderer::Renderer() {}
 
-Renderer::~Renderer() {
-    // Clean up resources
-}
+Renderer::~Renderer() {}
 
-// TODO: REFACTORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
 
 void Renderer::RenderChassis(const std::unordered_map<std::string, Mesh*>& meshes,
     const std::unordered_map<std::string, Shader*>& shaders,
     Implemented::CameraAPI* camera,
     const glm::mat4& projectionMatrix,
-    const glm::vec3& position,
-    float chassisRotationAngle,
-    const glm::vec3& trackColor,
-    const glm::vec3& bodyColor,
-    int trackDamageLevel,
-    bool isBodyDamaged) { // Add color as an argument
+    Tank* playerTank) {
+
+    glm::vec3 position = playerTank->getPosition();
+    float chassisRotationAngle = playerTank->getChassis()->getRotationAngle();
+    glm::vec3 trackColor = playerTank->getChassis()->getTrackColor();
+    glm::vec3 bodyColor = playerTank->getChassis()->getBodyColor();
+    int trackDamageLevel = playerTank->getChassis()->getTrackDamageLevel();
+    bool isBodyDamaged = playerTank->getChassis()->isBodyDamaged();
+
     for (const auto& entry : meshes) {
         const std::string& componentName = entry.first;
         Mesh* mesh = entry.second;
-        Shader* shader = shaders.at(componentName);  // Assuming shaders have the same names as components
+        Shader* shader = shaders.at(componentName);
 
         if (mesh && shader) {
             glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -32,6 +29,7 @@ void Renderer::RenderChassis(const std::unordered_map<std::string, Mesh*>& meshe
             modelMatrix = glm::rotate(modelMatrix, chassisRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
             shader->Use();
+
             glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
             glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
             glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -40,7 +38,7 @@ void Renderer::RenderChassis(const std::unordered_map<std::string, Mesh*>& meshe
 				int colorLoc = glGetUniformLocation(shader->program, "color");
 				glUniform3f(colorLoc, trackColor.r, trackColor.g, trackColor.b);
 
-                // Set the deformation parameter based on the damaged state
+                // Set the deformation parameter based on the damaged state.
                 int deformationParameterLoc = glGetUniformLocation(shader->program, "deformationParameter");
                 glUniform1f(deformationParameterLoc, trackDamageLevel);
 			}
@@ -61,15 +59,18 @@ void Renderer::RenderChassis(const std::unordered_map<std::string, Mesh*>& meshe
 void Renderer::RenderTurret(std::string name, Mesh *mesh, Shader *shader,
                             Implemented::CameraAPI *camera,
                             const glm::mat4& projectionMatrix,
-                            const glm::vec3& position,
-                            float turretRotationAngle,
-                            glm::vec3 color) {
+                            Tank *playerTank) {
+
+    glm::vec3 position = playerTank->getPosition();
+    float turretRotationAngle = playerTank->getTurret()->getRotationAngle();
+    glm::vec3 color = playerTank->getTurret()->getColor();
                             
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, position);
     modelMatrix = glm::rotate(modelMatrix, turretRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
     shader->Use();
+
     glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -83,10 +84,12 @@ void Renderer::RenderTurret(std::string name, Mesh *mesh, Shader *shader,
 void Renderer::RenderCannon(std::string name, Mesh* mesh, Shader* shader,
     Implemented::CameraAPI* camera,
     const glm::mat4& projectionMatrix,
-    const glm::vec3& position,
-    float turretRotationAngle,
-    float cannonRotationAngle,
-    glm::vec3 color) {
+    Tank *playerTank) {
+
+    glm::vec3 position = playerTank->getPosition();
+    float turretRotationAngle = playerTank->getTurret()->getRotationAngle();
+    float cannonRotationAngle = playerTank->getCannon()->getRotationAngle();
+    glm::vec3 color = playerTank->getCannon()->getColor();
 
     // Translating and rotating the cannon to the turret's position.
     glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -106,6 +109,7 @@ void Renderer::RenderCannon(std::string name, Mesh* mesh, Shader* shader,
     modelMatrix = modelMatrix * cannonTranslationMatrix;
 
     shader->Use();
+
     glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -118,20 +122,20 @@ void Renderer::RenderCannon(std::string name, Mesh* mesh, Shader* shader,
 
 void Renderer::RenderShell(std::string name, Mesh* mesh, Shader* shader,
     const glm::mat4& projectionMatrix,
-    const glm::vec3& position,
-    float turretRotationAngle,
+    Shell* shell,
     float deltaTime) {
+
+    glm::vec3 position = shell->getPosition();
+    float turretRotationAngle = shell->getRotationAngle();
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, position);
-
-    // rotate the bullet based on the turret's rotation angle
+    // Rotate the bullet based on the turret's rotation angle.
     modelMatrix = glm::rotate(modelMatrix, turretRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    //// Scale it a little bit
     modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 2.0f));
 
     shader->Use();
+
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
@@ -139,6 +143,7 @@ void Renderer::RenderShell(std::string name, Mesh* mesh, Shader* shader,
 }
 
 void Renderer::RenderBattlefield(std::string name, Mesh* mesh, Shader* shader,
+    Implemented::CameraAPI* camera,
     const glm::mat4& projectionMatrix,
     const glm::vec3& position) {
     
@@ -147,6 +152,7 @@ void Renderer::RenderBattlefield(std::string name, Mesh* mesh, Shader* shader,
 
     shader->Use();
 
+    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
@@ -163,6 +169,7 @@ void Renderer::RenderBarracks(std::string name, Mesh* mesh, Shader* shader,
     modelMatrix = glm::translate(modelMatrix, position);
 
     shader->Use();
+
     glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));

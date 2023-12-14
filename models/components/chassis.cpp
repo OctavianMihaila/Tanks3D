@@ -13,9 +13,7 @@ Chassis::Chassis() {
 	rotationAngle = 0;
 }
 
-Chassis::~Chassis() {
-    // Clean up resources
-}
+Chassis::~Chassis() {}
 
 float Chassis::getRotationAngle() {
 	return rotationAngle;
