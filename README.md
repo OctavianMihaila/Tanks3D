@@ -1,6 +1,7 @@
 ## Game Description
 
-Developed a 3D OpenGL game featuring dynamic environments where players strategically engage and destroy enemy tanks. Implemented advanced shaders to enhance visual appeal, delivering stunning graphics and realistic lighting effects. Expertly handled collision detection for seamless gameplay mechanics, ensuring precision in shooting interactions. Engineered randomized enemy tank movements, contributing to an immersive and challenging gaming experience
+Developed a 3D OpenGL game featuring dynamic environments where players strategically engage and destroy enemy tanks. Implemented advanced shaders to enhance visual appeal, delivering stunning graphics and realistic lighting effects.
+Expertly handled collision detection for seamless gameplay mechanics, ensuring precision in shooting interactions. Engineered randomized enemy tank movements, contributing to an immersive and challenging gaming experience
 
 ## Demo
 
